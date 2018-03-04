@@ -3,7 +3,7 @@ CFLAGS_common ?= -Wall -std=gnu99
 CFLAGS_orig = -O0
 CFLAGS_opt  = -O0
 
-EXEC = phonebook_orig phonebook_opt
+EXEC = phonebook_orig phonebook_opt phonebook_hash_opt
 
 GIT_HOOKS := .git/hooks/applied
 .PHONY: all
@@ -15,12 +15,20 @@ $(GIT_HOOKS):
 
 SRCS_common = main.c
 
+astyle:
+	astyle --style=kr --indent=spaces=4 --indent-switches --suffix=none *.[ch]
+
 phonebook_orig: $(SRCS_common) phonebook_orig.c phonebook_orig.h
 	$(CC) $(CFLAGS_common) $(CFLAGS_orig) \
 		-DIMPL="\"$@.h\"" -o $@ \
 		$(SRCS_common) $@.c
 
 phonebook_opt: $(SRCS_common) phonebook_opt.c phonebook_opt.h
+	$(CC) $(CFLAGS_common) $(CFLAGS_opt) \
+		-DIMPL="\"$@.h\"" -o $@ \
+		$(SRCS_common) $@.c
+
+phonebook_hash_opt: $(SRCS_common) phonebook_hash_opt.c phonebook_hash_opt.h
 	$(CC) $(CFLAGS_common) $(CFLAGS_opt) \
 		-DIMPL="\"$@.h\"" -o $@ \
 		$(SRCS_common) $@.c
@@ -36,6 +44,9 @@ cache-test: $(EXEC)
 	perf stat --repeat 100 \
 		-e cache-misses,cache-references,instructions,cycles \
 		./phonebook_opt
+	perf stat --repeat 100 \
+		-e cache-misses,cache-references,instructions,cycles \
+		./phonebook_hash_opt
 
 output.txt: cache-test calculate
 	./calculate
@@ -49,4 +60,4 @@ calculate: calculate.c
 .PHONY: clean
 clean:
 	$(RM) $(EXEC) *.o perf.* \
-	      	calculate orig.txt opt.txt output.txt runtime.png
+	      	calculate orig.txt opt.txt hash_opt.txt output.txt runtime.png

@@ -8,9 +8,12 @@
 
 #ifdef OPT
 #define OUT_FILE "opt.txt"
+#elif HASH_OPT
+#define OUT_FILE "hash_opt.txt"
 #else
 #define OUT_FILE "orig.txt"
 #endif
+
 
 #define DICT_FILE "./dictionary/words.txt"
 
@@ -49,19 +52,36 @@ int main(int argc, char *argv[])
     e = pHead;
     e->pNext = NULL;
 
+
 #if defined(__GNUC__)
     __builtin___clear_cache((char *) pHead, (char *) pHead + sizeof(entry));
 #endif
+
+#ifdef HASH_OPT //Hash
+    entry *table[HASH_TABLE_LENGTH];
+    init(table);
     clock_gettime(CLOCK_REALTIME, &start);
     while (fgets(line, sizeof(line), fp)) {
         while (line[i] != '\0')
             i++;
         line[i - 1] = '\0';
         i = 0;
-        e = append(line, e);
+        append(line, table);
     }
     clock_gettime(CLOCK_REALTIME, &end);
     cpu_time1 = diff_in_second(start, end);
+#else
+    clock_gettime(CLOCK_REALTIME, &start);
+    while (fgets(line, sizeof(line), fp)) {
+        while (line[i] != '\0')
+            i++;
+        line[i - 1] = '\0';
+        i = 0;
+        e = append(line,e);
+    }
+    clock_gettime(CLOCK_REALTIME, &end);
+    cpu_time1 = diff_in_second(start, end);
+#endif
 
     /* close file as soon as possible */
     fclose(fp);
@@ -70,20 +90,30 @@ int main(int argc, char *argv[])
 
     /* the givn last name to find */
     char input[MAX_LAST_NAME_SIZE] = "zyxel";
-    e = pHead;
 
+#ifndef HASH_OPT
     assert(findName(input, e) &&
            "Did you implement findName() in " IMPL "?");
     assert(0 == strcmp(findName(input, e)->lastName, "zyxel"));
+#endif
 
 #if defined(__GNUC__)
     __builtin___clear_cache((char *) pHead, (char *) pHead + sizeof(entry));
 #endif
+
+#ifdef HASH_OPT
+    /* compute the execution time */
+    clock_gettime(CLOCK_REALTIME, &start);
+    findName(input, table);
+    clock_gettime(CLOCK_REALTIME, &end);
+    cpu_time2 = diff_in_second(start, end);
+#else
     /* compute the execution time */
     clock_gettime(CLOCK_REALTIME, &start);
     findName(input, e);
     clock_gettime(CLOCK_REALTIME, &end);
     cpu_time2 = diff_in_second(start, end);
+#endif
 
     FILE *output = fopen(OUT_FILE, "a");
     fprintf(output, "append() findName() %lf %lf\n", cpu_time1, cpu_time2);
