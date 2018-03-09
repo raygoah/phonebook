@@ -30,6 +30,10 @@ typedef struct __PHONE_BOOK_ENTRY {
 entry *findName(char lastName[], entry *table[]);
 void append(char lastName[], entry **table);
 unsigned int BKDRHash(char *str);
+unsigned int APHash(char *str);
+unsigned int DJBHash(char *str);
+unsigned int SDBMHash(char *str);
+unsigned int ELFHash(char *str);
 void init(entry * table[]);
 
 #endif
