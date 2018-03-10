@@ -54,6 +54,9 @@ output.txt: cache-test calculate
 plot: output.txt
 	gnuplot scripts/runtime.gp
 
+plot_hash: output_all.txt
+	gnuplot scripts/runtime_all.gp
+
 calculate: calculate.c
 	$(CC) $(CFLAGS_common) $^ -o $@
 
