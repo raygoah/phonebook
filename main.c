@@ -10,6 +10,8 @@
 #define OUT_FILE "opt.txt"
 #elif HASH_OPT
 #define OUT_FILE "hash_opt.txt"
+#elif BST_OPT
+#define OUT_FILE "bst_opt.txt"
 #else
 #define OUT_FILE "orig.txt"
 #endif
@@ -85,16 +87,27 @@ int main(int argc, char *argv[])
 
     /* close file as soon as possible */
     fclose(fp);
-
+#ifndef BST_OPT
     e = pHead;
-
+#else
+    clock_gettime(CLOCK_REALTIME, &start);
+    BSTNode *root = BST(&pHead, listLength(pHead));
+    clock_gettime(CLOCK_REALTIME, &end);
+    cpu_time1 += diff_in_second(start, end);
+#endif
     /* the givn last name to find */
     char input[MAX_LAST_NAME_SIZE] = "zyxel";
 
 #ifndef HASH_OPT
+#ifdef BST_OPT
+    assert(findName(input, root) &&
+           "Did you implement findName() in " IMPL "?");
+    assert(0 == strcmp(findName(input, root)->lastName, "zyxel"));
+#else
     assert(findName(input, e) &&
            "Did you implement findName() in " IMPL "?");
     assert(0 == strcmp(findName(input, e)->lastName, "zyxel"));
+#endif
 #endif
 
 #if defined(__GNUC__)
@@ -105,6 +118,12 @@ int main(int argc, char *argv[])
     /* compute the execution time */
     clock_gettime(CLOCK_REALTIME, &start);
     findName(input, table);
+    clock_gettime(CLOCK_REALTIME, &end);
+    cpu_time2 = diff_in_second(start, end);
+#elif BST_OPT
+    /* compute the execution time */
+    clock_gettime(CLOCK_REALTIME, &start);
+    findName(input, root);
     clock_gettime(CLOCK_REALTIME, &end);
     cpu_time2 = diff_in_second(start, end);
 #else

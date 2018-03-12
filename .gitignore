@@ -8,7 +8,9 @@
 phonebook_opt
 phonebook_orig
 phonebook_hash_opt
+phonebook_bst_opt
 calculate
+bst_opt.txt
 hash_opt.txt
 orig.txt
 opt.txt
